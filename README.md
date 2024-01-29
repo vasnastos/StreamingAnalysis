@@ -1,5 +1,9 @@
 # StreamingAnalysis
 
+- In order to run it(and create the plots)
+`python analysis.py`
+
+
 **30/01/2024**
 
 - Traffic Volume Analysis:
