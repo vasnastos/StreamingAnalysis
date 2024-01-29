@@ -1,6 +1,6 @@
 # StreamingAnalysis
 
-- In order to run it(and create the plots)
+- In order to run the data (and create the plots)
 `python analysis.py`
 
 
