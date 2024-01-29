@@ -1,0 +1,2 @@
+﻿Address A,Address B,Packets,Bytes,Packets A → B,Bytes A → B,Packets B → A,Bytes B → A,Rel Start,Duration,Bits/s A → B,Bits/s B → A
+96:00:02:eb:9f:04,d2:74:7f:6e:37:e3,771066,6641976351,367714,6418506997,403352,223469354,0,83.10573,617864207,21511811
