@@ -28,23 +28,22 @@
      - **Data Cleaning:** Clean the data by removing duplicates, handling missing values, or filtering out irrelevant packets to focus on the traffic of interest.
      - **Feature Engineering:** Create new features that might be helpful for prediction, such as the flow duration, total bytes transferred in a flow, packet arrival times, and inter-arrival times.
 3. Exploratory Data Analysis (EDA)
-    Analyze the Data: Perform statistical analysis and visualization to understand traffic patterns, identify outliers, and grasp the relationships between features.
-    Correlation Analysis: Determine which features are most relevant to network traffic behavior, which can help in reducing the feature space.
+    - **Analyze the Data:** Perform statistical analysis and visualization to understand traffic patterns, identify outliers, and grasp the relationships between features.
+    - **Correlation Analysis:** Determine which features are most relevant to network traffic behavior, which can help in reducing the feature space.
 4. Model Selection
-    Choose a Model: Based on the problem at hand (e.g., traffic volume prediction, anomaly detection), select appropriate machine learning algorithms. Time series forecasting models (like ARIMA, SARIMA, LSTM networks) can be suitable for predicting future traffic volumes. For classification tasks (e.g., identifying types of traffic or detecting anomalies), algorithms like Random Forest, SVM, or neural networks might be more appropriate.
+    - **Choose a Model:** Based on the problem at hand (e.g., traffic volume prediction, anomaly detection), select appropriate machine learning algorithms. Time series forecasting models (like ARIMA, SARIMA, LSTM networks) can be suitable for predicting future traffic volumes. For classification tasks (e.g., identifying types of traffic or detecting anomalies), algorithms like Random Forest, SVM, or neural networks might be more appropriate.
 
 5. Feature Selection and Dimensionality Reduction
-
-    Reduce Feature Space: Use techniques like Principal Component Analysis (PCA) or feature importance scores from machine learning models to reduce the number of features, focusing on the most informative ones.
+    - **Reduce Feature Space:** Use techniques like Principal Component Analysis (PCA) or feature importance scores from machine learning models to reduce the number of features, focusing on the most informative ones.
 
 6. Model Training
-   Train the Model: Split the data into training and test sets. Train your model on the training set. Use cross-validation to fine-tune hyperparameters and avoid overfitting.
+   - **Train the Model:** Split the data into training and test sets. Train your model on the training set. Use cross-validation to fine-tune hyperparameters and avoid overfitting.
 
 7. Evaluation
- Test the Model: Evaluate the model's performance on the test set using appropriate metrics (e.g., accuracy, precision, recall, F1 score for classification; MSE, RMSE, MAE for regression).
+  - **Test the Model:** Evaluate the model's performance on the test set using appropriate metrics (e.g., accuracy, precision, recall, F1 score for classification; MSE, RMSE, MAE for regression).
 
 10. Monitoring and Updating
-    Monitor Performance: Continuously monitor the model's performance and update it as necessary to adapt to new patterns in network traffic.
+    - **Monitor Performance:** Continuously monitor the model's performance and update it as necessary to adapt to new patterns in network traffic.
 
 #### Tools and Technologies
  - Data Processing: Python (pandas, NumPy), SQL.
