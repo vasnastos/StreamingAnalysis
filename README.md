@@ -24,9 +24,9 @@
 1. Data Collection
    - **Capture Data:** Use Wireshark to capture TCP packets on your network. Ensure you have sufficient data to capture various patterns and anomalies in network traffic.
 2. Data Preprocessing
- - **Extract Features:** Convert the raw pcap (packet capture) files into a structured format like CSV or a database. Extract relevant features from each packet, such as source IP, destination IP, source port, destination port, timestamp, TCP flags, packet size, and any payloads if they're not encrypted.
- - **Data Cleaning:** Clean the data by removing duplicates, handling missing values, or filtering out irrelevant packets to focus on the traffic of interest.
- - **Feature Engineering:** Create new features that might be helpful for prediction, such as the flow duration, total bytes transferred in a flow, packet arrival times, and inter-arrival times.
+     - **Extract Features:** Convert the raw pcap (packet capture) files into a structured format like CSV or a database. Extract relevant features from each packet, such as source IP, destination IP, source port, destination port, timestamp, TCP flags, packet size, and any payloads if they're not encrypted.
+     - **Data Cleaning:** Clean the data by removing duplicates, handling missing values, or filtering out irrelevant packets to focus on the traffic of interest.
+     - **Feature Engineering:** Create new features that might be helpful for prediction, such as the flow duration, total bytes transferred in a flow, packet arrival times, and inter-arrival times.
 3. Exploratory Data Analysis (EDA)
     Analyze the Data: Perform statistical analysis and visualization to understand traffic patterns, identify outliers, and grasp the relationships between features.
     Correlation Analysis: Determine which features are most relevant to network traffic behavior, which can help in reducing the feature space.
