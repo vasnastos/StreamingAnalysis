@@ -40,7 +40,7 @@
    - **Train the Model:** Split the data into training and test sets. Train your model on the training set. Use cross-validation to fine-tune hyperparameters and avoid overfitting.
 
 7. Evaluation
-  - **Test the Model:** Evaluate the model's performance on the test set using appropriate metrics (e.g., accuracy, precision, recall, F1 score for classification; MSE, RMSE, MAE for regression).
+      - **Test the Model:** Evaluate the model's performance on the test set using appropriate metrics (e.g., accuracy, precision, recall, F1 score for classification; MSE, RMSE, MAE for regression).
 
 10. Monitoring and Updating
     - **Monitor Performance:** Continuously monitor the model's performance and update it as necessary to adapt to new patterns in network traffic.
