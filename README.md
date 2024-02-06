@@ -1,7 +1,7 @@
 # StreamingAnalysis
 
 - In order to run the data (and create the plots)
-`python analysis.py`
+`python analysis.py` 
 
 
 ## Pipelines
