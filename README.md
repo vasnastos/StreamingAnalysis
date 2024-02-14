@@ -1,9 +1,9 @@
 # StreamingAnalysis
-
+## How to run the models
 - In order to run the data (and create the plots)
   `python analysis.py`
 
-## Pipelines
+## Potential pipelines
 
 - Traffic Volume Analysis:
   Time Series Analysis: Examine traffic volume over time to identify patterns, trends, peaks, and troughs.
@@ -20,7 +20,7 @@
 - **Traffic analysis for 5G network slice:** This research paper discusses a home traffic analysis system combined with the Internet of Things2. Although it’s not a dataset, it might provide useful insights for your work.
 - **Stanford Large Network Dataset Collection:** This collection includes several large network datasets, including social networks, networks with ground-truth communities, and communication networks3.
 
-## Network traffic prediction pipeline
+## Pipeline Description
 
 1. Data Collection
 
