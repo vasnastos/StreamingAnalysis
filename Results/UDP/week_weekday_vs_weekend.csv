@@ -1,0 +1,10 @@
+,Weekdays,Weekend
+Flows,5257.0,1099.0
+Median bytes per flow,8304.0,1187.0
+Mean bytes per flow,3260681.2124786,1834276.4786169245
+Flows with 1 packet (%),21.209815484116415,37.67060964513193
+"KS distance D, weekdays vs weekend (pooled)",0.17210174120281235,
+KS p-value,5.378821758836845e-24,
+Mann-Whitney p-value,1.5815653382912722e-12,
+Mean KS D between two weekdays,0.08867032538038015,
+Mean KS D weekday vs weekend day,0.18754133502968878,

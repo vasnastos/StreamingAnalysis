@@ -1,0 +1,23 @@
+,Value
+Flows,1419
+Share of all flows in the file (%),28.38
+First to last flow start (s),0.033323
+New flows per second,42583.200792245596
+Inter-arrival time CV,1.9663129079931778
+Flows active until the last second of the file (%),2.1846370683579983
+Flows with 1 packet (%),78.78787878787878
+One-direction flows (%),84.35517970401692
+Bytes carried by top 1% of flows (%),59.847304129751194
+Bytes carried by top 10% of flows (%),85.99369166522953
+Median bytes per flow,60.0
+Mean bytes per flow,437.24383368569414
+Missing Bits/s values (%),79.06976744186046
+"Spearman Packets~Bytes, same flow",0.9625320892207652
+Spearman Bytes(t)~Bytes(t+1),0.021495280206306016
+"ACF per flow, lag 1",0.08027741875419088
+"ACF per flow, lag 10",-0.006822420933020794
+"ACF per flow, lag 100",-0.004605635404060582
+"ACF per 0.1 s, lag 1",
+"ACF per 0.1 s, lag 10",
+Best baseline (MAE),Train median
+Best baseline MAE,444.57597173144876
