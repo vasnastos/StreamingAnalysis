@@ -1,79 +1,154 @@
 # StreamingAnalysis
-## How to run the models
-- In order to run the data (and create the plots)
-  `python analysis.py`
 
-## Potential pipelines
+Code, data and results for a bachelor's thesis on **knowledge extraction from network traffic flows using data mining techniques**.
 
-- Traffic Volume Analysis:
-  Time Series Analysis: Examine traffic volume over time to identify patterns, trends, peaks, and troughs.
-  Volume by IP/Port: Analyze the data volume by source and destination IP, as well as by ports, to identify which hosts and services are the most active.
-- Performance Analysis:
-  Latency Analysis: If you have timestamp information, you can analyze the latency between packets.
-  Packet Size Analysis: Understand the distribution of packet sizes to optimize network performance.
+The project has three parts:
 
-## Datasets
+1. **Dataset:** flows are extracted from public packet traces of the MAWI archive.
+2. **Analysis:** TCP, UDP and ICMP flows are analysed separately for each day, and the days are then compared.
+3. **Prediction:** LSTM networks predict the total size in bytes of each TCP flow from the flows that came before it.
 
-**External datasets**
+![Flows per protocol and day](Results/week_protocols.png)
 
-- **UWF-ZeekData22**: This is a comprehensive network traffic dataset based on the MITRE ATT&CK Framework1. The dataset was collected using Zeek and labelled using the MITRE ATT&CK framework. It can be used to develop user profiles of groups intending to perform attacks. The dataset is publicly available at datasets.uwf.edu1.
-- **Traffic analysis for 5G network slice:** This research paper discusses a home traffic analysis system combined with the Internet of Things2. Although it’s not a dataset, it might provide useful insights for your work.
-- **Stanford Large Network Dataset Collection:** This collection includes several large network datasets, including social networks, networks with ground-truth communities, and communication networks3.
+## Dataset
 
-## Pipeline Description
+The flows come from the [MAWI Working Group Traffic Archive](https://mawi.wide.ad.jp/mawi/) of the WIDE project, **samplepoint-F**. This sampling point monitors the transit link of WIDE in Tokyo and, since 2023, also the link to the BBIX exchange point. Each daily trace covers 15 minutes, from 14:00 to 14:15 Japan time. IP addresses are anonymised with Crypto-PAn, and the mapping is consistent only within one daily trace, so the same address on two different days is not necessarily the same host.
 
-1. Data Collection
+**Sample:**
+- 7 consecutive days, from Tuesday 9 to Monday 15 June 2026 (five weekdays and one weekend).
+- Only the first minute of each trace is used (14:00–14:01).
+- From that minute, the first **5,000 flows** to start are kept, whatever their protocol, so the dataset has **35,000 flows** in total.
 
-   - **Capture Data:** Use Wireshark to capture TCP packets on your network. Ensure you have sufficient data to capture various patterns and anomalies in network traffic.
-2. Data Preprocessing
+| Date | Day | Flow starts (ms) | Packets | Volume (GB) | IPv4 / IPv6 (%) |
+|---|---|---|---|---|---|
+| 09/06/2026 | Tuesday | 0–29.6 | 8,625,150 | 13.29 | 92.2 / 7.7 |
+| 10/06/2026 | Wednesday | 0–33.3 | 9,739,992 | 14.25 | 91.8 / 8.0 |
+| 11/06/2026 | Thursday | 0–33.4 | 6,657,689 | 7.87 | 90.8 / 8.9 |
+| 12/06/2026 | Friday | 0–29.3 | 7,725,432 | 9.45 | 93.3 / 6.5 |
+| 13/06/2026 | Saturday | 0–42.4 | 4,055,512 | 4.30 | 95.7 / 4.1 |
+| 14/06/2026 | Sunday | 0–45.2 | 4,041,152 | 4.85 | 96.1 / 3.6 |
+| 15/06/2026 | Monday | 0–33.5 | 6,713,875 | 8.66 | 92.3 / 7.4 |
+| **Total** | | | **47,558,802** | **62.67** | |
 
-   - **Extract Features:** Convert the raw pcap (packet capture) files into a structured format like CSV or a database. Extract relevant features from each packet, such as source IP, destination IP, source port, destination port, timestamp, TCP flags, packet size, and any payloads if they're not encrypted.
-   - **Data Cleaning:** Clean the data by removing duplicates, handling missing values, or filtering out irrelevant packets to focus on the traffic of interest.
-   - **Feature Engineering:** Create new features that might be helpful for prediction, such as the flow duration, total bytes transferred in a flow, packet arrival times, and inter-arrival times.
-3. Exploratory Data Analysis (EDA)
+Packets and volume count the packets of the 5,000 flows within the first minute of each trace.
 
-   - **Analyze the Data:** Perform statistical analysis and visualization to understand traffic patterns, identify outliers, and grasp the relationships between features.
-   - **Correlation Analysis:** Determine which features are most relevant to network traffic behavior, which can help in reducing the feature space.
-4. Model Selection
+## Repository structure
 
-   - **Choose a Model:** Based on the problem at hand (e.g., traffic volume prediction, anomaly detection), select appropriate machine learning algorithms. Time series forecasting models (like ARIMA, SARIMA, LSTM networks) can be suitable for predicting future traffic volumes. For classification tasks (e.g., identifying types of traffic or detecting anomalies), algorithms like Random Forest, SVM, or neural networks might be more appropriate.
-5. Feature Selection and Dimensionality Reduction
+```
+StreamingAnalysis/
+├── pcap_first_flows.py        # MAWI pcap -> CSV with the first N flows (all protocols)
+├── analysis.py                # statistical analysis per protocol and day, comparison of days
+├── Conversations/             # the dataset: one CSV per day
+│   ├── first_5000_flows_20260609.csv
+│   ├── first_5000_flows_20260609.png   # flows, packets and bytes per protocol for that day
+│   └── ...                             # same for 10/06 - 15/06
+├── Results/                   # output of analysis.py
+│   ├── week_protocols.csv / .png       # protocol mix per day
+│   ├── TCP/
+│   │   ├── 20260609/ ... 20260615/     # analysis of each day
+│   │   └── week_*                      # comparison of the 7 days
+│   ├── UDP/                            # same structure
+│   └── ICMP/                           # same structure (ICMP and ICMPv6)
+└── DL4NTP/
+    └── DL4NTP.ipynb           # LSTM models (Simple, Bidirectional, Stacked)
+```
 
-   - **Reduce Feature Space:** Use techniques like Principal Component Analysis (PCA) or feature importance scores from machine learning models to reduce the number of features, focusing on the most informative ones.
-6. Model Training
+## 1. Flow extraction: `pcap_first_flows.py`
 
-   - **Train the Model:** Split the data into training and test sets. Train your model on the training set. Use cross-validation to fine-tune hyperparameters and avoid overfitting.
-7. Evaluation
+The script reads a MAWI trace with `tshark` and keeps the first N flows (default 5,000), whatever their protocol. It writes them to a CSV file and draws a PNG with the protocol mix.
 
-   - **Test the Model:** Evaluate the model's performance on the test set using appropriate metrics (e.g., accuracy, precision, recall, F1 score for classification; MSE, RMSE, MAE for regression).
-8. Monitoring and Updating
+```bash
+python3 pcap_first_flows.py 202606091400.pcap.gz first_5000_flows_20260609.csv --until 60
+```
 
-   - **Monitor Performance:** Continuously monitor the model's performance and update it as necessary to adapt to new patterns in network traffic.
+- `--n`: number of flows to keep (default 5000)
+- `--until`: stop reading after this many seconds (60 = first minute)
+- `--png`: name of the PNG file (default: same name as the CSV)
 
-#### Tools and Technologies
+**How a flow is defined:**
+- **TCP:** one flow per connection (`tcp.stream`), as in Wireshark's *Statistics → Conversations → TCP*.
+- **UDP:** one flow per `udp.stream`, i.e. per pair of addresses and ports.
+- **Protocols without ports (ICMP, ICMPv6, GRE, ESP, tunnels):** one flow per pair of IP addresses and protocol.
+- **Non-IP traffic (e.g. ARP):** one flow per pair of MAC addresses and protocol.
 
-- Data Processing: Python (pandas, NumPy), SQL.
-- Machine Learning: scikit-learn, TensorFlow, Keras, PyTorch.
-- Visualization: Matplotlib, seaborn, Plotly.
+The outer header decides the protocol. An ICMP error that carries a TCP header counts as ICMP, and a tunnel counts as one flow.
 
+The "first N flows" are the N flows that start first. All their packets are counted until the end of the file, or until `--until`, so every flow kept is complete within the window. Packet size is the original frame length (`frame.len`).
 
-## Correlation Analysis
+**Columns:** `Network, Protocol, Address A, Port A, Address B, Port B, Packets, Bytes, Stream ID, Packets A → B, Bytes A → B, Packets B → A, Bytes B → A, Rel Start, Duration, Bits/s A → B, Bits/s B → A`
 
-* Dataset: [NET_CAPTURE-v2](./Conversations/TCP.csv)
-* Feature Correlation
-  ![c](./Results/TCP_correlation_analysis.png)
+- A is the source of the flow's first packet.
+- `Rel Start` is measured in seconds from the start of the trace.
+- `Bits/s` is left empty when `Duration` < 5 ms, as in Wireshark.
+- Rows are sorted by `Rel Start`.
 
+## 2. Analysis: `analysis.py`
 
-## Statistics on NET_CAPTURE-v2
+Run it on all seven days:
 
-| Column          | Mean        | Median  | Std          | Min   | Max       | Variance    | Skewness    | Kurtosis   |
-|-----------------|-------------|---------|--------------|-------|-----------|-------------|-------------|------------|
-| Packets A to B  | 103.1852    | 74      | 179.7240     | 1     | 6269      | 32300.72    | 17.3640     | 528.3541   |
-| Bytes A to B    | 19971.63    | 7921    | 83819.60     | 66    | 4318425   | 7.0257e+09  | 42.3145     | 2155.0320  |
-| Packets B to A  | 104.5966    | 66      | 400.9378     | 0     | 17949     | 160751.11   | 36.4494     | 1494.3379  |
-| Bytes B to A    | 1747397.93  | 128845  | 3186690.34   | 0     | 96490445  | 1.0155e+13  | 11.1391     | 275.9333   |
-| Rel Start       | 23.9907     | 17.2607 | 23.6033      | 0     | 83.0561   | 557.1146    | 0.9428      | -0.2469    |
-| Duration        | 33.1999     | 29.9637 | 30.4958      | 0     | 83.0492   | 929.9938    | 0.3507      | -1.3347    |
+```bash
+python3 analysis.py Conversations/first_5000_flows_*.csv
+```
+
+Or run it on a single day:
+
+```bash
+python3 analysis.py Conversations/first_5000_flows_20260609.csv
+```
+
+Each protocol group (TCP, UDP, ICMP) is analysed separately. The target variable is `Bytes`, the total size of a flow.
+
+**Per day** (`Results/<protocol>/<date>/<date>_*`):
+
+| File | Content |
+|---|---|
+| `describe.csv`, `statistics.csv` | descriptive statistics of the flow features |
+| `DistributionOfDatasetColumns.png` | distributions of the flow features |
+| `correlation.csv`, `correlation_analysis.png` | Spearman correlation between the features of the same flow (redundant inputs) |
+| `lag_correlation.csv`, `lag_correlation.png` | Spearman correlation of each feature of flow *t* with the bytes of flow *t+k* (k = 0, 1, 10, 100) |
+| `autocorrelation.csv`, `autocorrelation.png` | autocorrelation of the flow sizes |
+| `TimeSeries.png`, `per_0.1s.csv` | traffic aggregated per 0.1 s |
+| `baselines.csv` | MAE and RMSE of simple baselines on the last 20% of the flows (the models the LSTM must beat) |
+| `summary.csv` | summary of the day |
+
+**Comparison of the 7 days** (`Results/<protocol>/week_*`):
+
+| File | Content |
+|---|---|
+| `week_summary.csv` | key figures per day, with weekday and weekend means |
+| `week_by_day.png`, `week_distributions.png` | the days side by side |
+| `week_similarity_ks.csv`, `week_similarity.png` | Kolmogorov–Smirnov distance between the byte distributions of each pair of days |
+| `week_weekday_vs_weekend.csv` | weekdays compared with the weekend |
+| `week_heavy_hitters.csv`, `week_heavy_hitters.png`, `week_top_pairs.csv` | the largest flows and the address pairs behind them |
+| `week_baselines.csv` | baselines under different train/test splits by day |
+
+The protocol mix of all days is written to `Results/week_protocols.csv` and `Results/week_protocols.png`.
+
+## 3. Prediction: `DL4NTP/DL4NTP.ipynb`
+
+The notebook is based on the code of Fleischer & Myerson (link below). It compares three architectures: **Simple LSTM**, **Bidirectional LSTM** and **Stacked LSTM**.
+
+- **Input:** only the TCP flows, sorted by start time, with each flow as one step of the sequence.
+- **Output:** the total bytes of the next flow.
+- **Evaluation:** MAE and RMSE, compared with the baselines from `analysis.py`.
+
+> The notebook is being adapted to the MAWI TCP flows in `Conversations/`.
+
+## Requirements
+
+- Python 3 with `pandas`, `numpy`, `scipy`, `scikit-learn`, `matplotlib`, `seaborn`
+- `tshark` (part of Wireshark) for `pcap_first_flows.py`
+- `tensorflow` / `keras` for the LSTM notebook
+
+```bash
+pip install pandas numpy scipy scikit-learn matplotlib seaborn tensorflow
+```
+
+## Data source
+
+- MAWI Working Group Traffic Archive: https://mawi.wide.ad.jp/mawi/
+- samplepoint-F traces of 2026: https://mawi.wide.ad.jp/mawi/samplepoint-F/2026/
+- K. Cho, K. Mitsuya, A. Kato, *Traffic Data Repository at the WIDE Project*, USENIX Annual Technical Conference, FREENIX Track, 2000.
 
 ## Links
 * [https://github.com/nb0309/Network-Traffic-Analysis-using-Machine-learning/blob/main/anomalydetection.ipynb](https://github.com/nb0309/Network-Traffic-Analysis-using-Machine-learning/blob/main/anomalydetection.ipynb)
