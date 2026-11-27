@@ -52,7 +52,8 @@ StreamingAnalysis/
 └── DL4NTP/
     ├── DL4NTP.ipynb           # LSTM prediction on the TCP flows (Simple, Bidirectional, Stacked)
     └── Results Prediction/    # output of the notebook
-        ├── week_lstm.csv
+        ├── week_lstm.csv              # results per day
+        ├── week_lstm_summary.csv      # mean of the 7 days per model
         ├── week_lstm_split.png
         ├── week_lstm_predictions.png
         ├── week_lstm_predictions_simple.png
@@ -157,13 +158,14 @@ All settings (days, features, correlation limit, window, epochs, batch size) are
 
 | File | Content |
 |---|---|
-| `week_lstm.csv` | MAE, RMSE and R² of every model and baseline for each day |
+| `week_lstm.csv` | MAE, RMSE and R² of every model and baseline for each day (6 models × 7 days) |
+| `week_lstm_summary.csv` | the same metrics averaged over the 7 days, one row per model (the table below) |
 | `week_lstm_split.png` | all TCP flows of each day, with the training part and the test part |
 | `week_lstm_predictions.png` | actual and predicted bytes of the test flows, the three models together |
 | `week_lstm_predictions_simple.png`, `_bidirectional.png`, `_stacked.png` | the same for one model at a time, with the daily MAE in the title of each panel |
 | `week_lstm_loss.png` | training loss per epoch, for each model and day |
 
-**Results** (mean over the 7 days, test flows only):
+**Results.** The prediction is made separately for each day: every model is trained on the first 80% of a day's TCP flows and tested on the last 20% of the same day, which gives 7 days × 3 models = 21 trainings. The daily results are in `week_lstm.csv`. The table below (`week_lstm_summary.csv`) is the mean of the 7 daily results for each model, not a separate prediction over the whole week.
 
 | Model | MAE (bytes) | RMSE (bytes) | R² |
 |---|---|---|---|
