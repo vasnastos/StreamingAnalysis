@@ -50,7 +50,15 @@ StreamingAnalysis/
 │   ├── UDP/                            # same structure
 │   └── ICMP/                           # same structure (ICMP and ICMPv6)
 └── DL4NTP/
-    └── DL4NTP.ipynb           # LSTM models (Simple, Bidirectional, Stacked)
+    ├── DL4NTP.ipynb           # LSTM prediction on the TCP flows (Simple, Bidirectional, Stacked)
+    └── Results Prediction/    # output of the notebook
+        ├── week_lstm.csv
+        ├── week_lstm_split.png
+        ├── week_lstm_predictions.png
+        ├── week_lstm_predictions_simple.png
+        ├── week_lstm_predictions_bidirectional.png
+        ├── week_lstm_predictions_stacked.png
+        └── week_lstm_loss.png
 ```
 
 ## 1. Flow extraction: `pcap_first_flows.py`
@@ -126,19 +134,55 @@ The protocol mix of all days is written to `Results/week_protocols.csv` and `Res
 
 ## 3. Prediction: `DL4NTP/DL4NTP.ipynb`
 
-The notebook is based on the code of Fleischer & Myerson (link below). It compares three architectures: **Simple LSTM**, **Bidirectional LSTM** and **Stacked LSTM**.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vasnastos/StreamingAnalysis/blob/main/DL4NTP/DL4NTP.ipynb)
 
-- **Input:** only the TCP flows, sorted by start time, with each flow as one step of the sequence.
-- **Output:** the total bytes of the next flow.
-- **Evaluation:** MAE and RMSE, compared with the baselines from `analysis.py`.
+The notebook is based on the DL4NTP code of Fleischer & Myerson (link below), adapted to the MAWI TCP flows in `Conversations/`. It compares three architectures: **Simple LSTM**, **Bidirectional LSTM** and **Stacked LSTM**.
 
-> The notebook is being adapted to the MAWI TCP flows in `Conversations/`.
+**How to run it:** open it in Google Colab with the button above and choose *Runtime → Run all*. The notebook clones this repository by itself to get the CSV files. At the end it downloads all its outputs as one file, `week_lstm_results.zip`. If Colab shows an older version of the notebook, close the tab and open the link again.
+
+To run it locally, install the requirements below, start `jupyter notebook` in the repository folder and run all cells.
+
+**What it does:**
+- **Data:** reads the seven CSV files and keeps only the TCP flows, sorted by start time (as in `analysis.py`).
+- **Split:** each day is handled separately. The first 80% of its flows are used for training and the last 20% for testing, so the test flows are the same as those of the baselines in `Results/TCP/week_baselines.csv`.
+- **Features:** chosen by Spearman correlation on the training part only. A field is kept only if its correlation with every field already kept is at most 0.9. The result is `Bytes`, `Bytes B → A` and `Duration`. The `Bits/s` fields are not used, because they are empty for flows shorter than 5 ms.
+- **Preparation:** `log(1 + x)` and scaling to [0, 1] with `MinMaxScaler`, fitted on the training part only. Each sample is a window of the 100 previous flows, and the target is the `Bytes` of the next flow.
+- **Models:** the three DL4NTP architectures with 50 LSTM units, 5 epochs and batch size 100. Simple LSTM is trained with MSE. Bidirectional and Stacked LSTM use the DL4NTP `rmse` loss, which with a single output equals the mean absolute error.
+- **Evaluation:** MAE, RMSE and R² (the square of the correlation between predicted and actual values, as in DL4NTP), together with three baselines: the previous flow, the median of the previous 100 flows and the median of the training flows.
+- **Reproducibility:** the random seed is fixed (42), so every run gives the same results.
+
+All settings (days, features, correlation limit, window, epochs, batch size) are in the *Settings* cell. To run a single day, set for example `DAYS = ["20260609"]`.
+
+**Outputs** (`DL4NTP/Results Prediction/`). Every figure has a caption underneath that explains what it shows.
+
+| File | Content |
+|---|---|
+| `week_lstm.csv` | MAE, RMSE and R² of every model and baseline for each day |
+| `week_lstm_split.png` | all TCP flows of each day, with the training part and the test part |
+| `week_lstm_predictions.png` | actual and predicted bytes of the test flows, the three models together |
+| `week_lstm_predictions_simple.png`, `_bidirectional.png`, `_stacked.png` | the same for one model at a time, with the daily MAE in the title of each panel |
+| `week_lstm_loss.png` | training loss per epoch, for each model and day |
+
+**Results** (mean over the 7 days, test flows only):
+
+| Model | MAE (bytes) | RMSE (bytes) | R² |
+|---|---|---|---|
+| Previous flow | 747,781 | 5,746,641 | 0.000 |
+| Median of previous 100 flows | 377,243 | 4,066,284 | 0.003 |
+| Training median | 377,249 | 4,066,278 | – |
+| Simple LSTM | 377,263 | 4,066,270 | 0.001 |
+| Bidirectional LSTM | 377,243 | 4,066,285 | 0.003 |
+| Stacked LSTM | 377,243 | 4,066,284 | 0.003 |
+
+The three LSTMs reach the level of the median baselines and halve the error of the previous-flow baseline. They predict the typical flow size but not the few very large flows, and R² stays below 0.01. This agrees with the analysis, where the correlation of a flow with the next one is close to zero.
+
+![Actual and predicted bytes of the test flows](DL4NTP/Results%20Prediction/week_lstm_predictions.png)
 
 ## Requirements
 
 - Python 3 with `pandas`, `numpy`, `scipy`, `scikit-learn`, `matplotlib`, `seaborn`
 - `tshark` (part of Wireshark) for `pcap_first_flows.py`
-- `tensorflow` / `keras` for the LSTM notebook
+- `tensorflow` / `keras` for the LSTM notebook (already installed in Google Colab)
 
 ```bash
 pip install pandas numpy scipy scikit-learn matplotlib seaborn tensorflow
