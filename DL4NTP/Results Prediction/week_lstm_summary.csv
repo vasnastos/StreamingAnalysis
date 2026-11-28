@@ -1,0 +1,8 @@
+Model,Mean MAE (bytes),Mean RMSE (bytes),Mean R2,Mean MAE log10
+Previous flow,747781,5746641,-1.0219,1.152
+Median of previous 100 flows,377243,4066284,-0.0134,0.816
+Train median,377249,4066278,-0.0134,0.826
+Always 0 bytes,377300,4066296,-0.0134,2.588
+Simple LSTM,377263,4066270,-0.0134,0.87
+Bidirectional LSTM,377243,4066285,-0.0134,0.822
+Stacked LSTM,377243,4066284,-0.0134,0.824
